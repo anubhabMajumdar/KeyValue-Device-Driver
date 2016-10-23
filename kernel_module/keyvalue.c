@@ -42,22 +42,64 @@
 #include <linux/moduleparam.h>
 #include <linux/poll.h>
 
+//------------------------------------------------structures--------------------------------------------//
+
+struct node
+{
+	struct keyvalue_set inp;
+	void *actual_data;
+	struct node *next;
+};
+
+//------------------------------------------------Linked List methods--------------------------------------------//
+
+int add_node (struct keyvalue_get *ukv)
+{
+	struct node *new_node = kmalloc(sizeof(struct node), GFP_KERNEL);
+	
+	if (!new_node)
+		return -1;
+	
+	if (access_ok( struct keyvalue_set, ukv, sizeof(struct keyvalue_set) )) {
+		printk(KERN_ALERT "access ok in add_node");
+		copy_from_user( &(new_node->inp), ukv, sizeof(struct keyvalue_set) );
+		
+		// copy actual data from user memory
+		new_node->actual_data = kmalloc(sizeof((new_node->inp).size), GFP_KERNEL);
+		copy_from_user( new_node->actual_data, (new_node->inp).data, (new_node->inp).size );
+		printk(KERN_ALERT "data address = %d", (new_node->inp).data);
+		printk(KERN_ALERT "data = %s", new_node->actual_data);
+	}
+	return 1;	
+		
+	
+}
+
+//------------------------------------------------Global variables--------------------------------------------//
+
+
 unsigned transaction_id;
+struct node *head = NULL;
+
+
+//------------------------------------------------structures--------------------------------------------//
+
 static void free_callback(void *data)
 {
 }
 
 static long keyvalue_get(struct keyvalue_get __user *ukv)
 {
-    struct keyvalue_get kv;
-
+    //struct keyvalue_get kv;
+	
+	
     return transaction_id++;
 }
 
 static long keyvalue_set(struct keyvalue_set __user *ukv)
 {
-    struct keyvalue_set kv;
-
+    int flag = add_node(ukv);
+	
     return transaction_id++;
 }
 
