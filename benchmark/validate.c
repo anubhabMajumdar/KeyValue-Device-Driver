@@ -51,6 +51,10 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Key %i has a wrong value %s v.s. %s\n",i,data,kv[i]);
             error++;
         }
+        else
+        {
+        	fprintf(stderr, "Key %i has a wrong value %s v.s. %s\n",i,data,kv[i]);
+        }
     }
     if(error==0)
             fprintf(stderr, "You passed!\n");
