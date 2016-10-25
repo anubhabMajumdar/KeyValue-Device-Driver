@@ -28,22 +28,19 @@ int main(int argc, char *argv[])
     }
     srand((int)time(NULL)+(int)getpid());
     // Initializing the keys
-    for(i = 0; i < number_of_keys; i++)
+    ///for(i = 0; i < number_of_keys; i++)
+    for(i = 0; i < number_of_transactions; i++)
     {
         memset(data, 0, 1024);
         a = rand();
         sprintf(data,"%d",a);
-        tid = kv_set(devfd,i,strlen(data),data);
+        tid = kv_set(devfd,i%number_of_keys,strlen(data),data);
         //fprintf(stderr,"S\t%d\t%d\t%d\t%s\n",tid,i,strlen(data),data);
         //printf("%d\n", data);
         printf("S\t%d\t%d\t%d\t%s\n",tid,i,strlen(data),data);
     }
-/*    for(i = 0; i < number_of_transactions; i++)
-    {
-        tid = kv_get(devfd,i,size,&a);
-        fprintf(stderr,"G\t%d\t%d\t%d\n",tid,sizeof(int),a);
-        
-    }*/
+    
+    
     close(devfd);
     return 0;
 }

@@ -51,13 +51,21 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Key %i has a wrong value %s v.s. %s\n",i,data,kv[i]);
             error++;
         }
-        else
-        {
-        	fprintf(stderr, "Key %i has a wrong value %s v.s. %s\n",i,data,kv[i]);
-        }
+        
     }
     if(error==0)
             fprintf(stderr, "You passed!\n");
+        
+    // validate delete        
+    for(i = 0; i < number_of_transactions; i++)
+    {
+        tid = kv_delete(devfd, i);
+        if (tid==-1)
+			printf("Error in deleteing %d\n", i);
+		else
+			printf("Successfully deleted %d\n", i);		
+    }
+            
     
     close(devfd);
     return 0;
