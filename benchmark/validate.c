@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "You passed!\n");
         
     // validate delete        
-    for(i = 0; i < number_of_keys; i++)
+    for(i = 0; i < number_of_keys+10; i++)
     {
         tid = kv_delete(devfd, i);
         if (tid==-1)
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 			printf("Successfully deleted %d\n", i);		
     }
     
-    for(i = 0; i < number_of_keys; i++)
+    for(i = 0; i < number_of_keys+10; i++)
     {
         tid = kv_get(devfd, i, &size, &data);
         if (tid==-1)
