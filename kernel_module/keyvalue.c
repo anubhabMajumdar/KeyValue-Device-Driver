@@ -148,6 +148,126 @@ int find_node (struct keyvalue_get *ukv)
 	
 }
 
+int delete_node (struct keyvalue_delete ukv)
+{
+	struct keyvalue_delete *new_node = kmalloc(sizeof(struct keyvalue_delete), GFP_KERNEL);
+	
+	if (!new_node)
+	{
+		printk(KERN_ALERT "No kernel space in find_node");
+		return -1;
+	}
+	
+    
+	if (access_ok( struct keyvalue_delete, ukv, sizeof(struct keyvalue_delete) )) {
+		printk(KERN_ALERT "access ok in delete_node");
+		copy_from_user( new_node, ukv, sizeof(struct keyvalue_get) );
+		
+        printk(KERN_ALERT "Key to be deleted = %d", new_node->key);
+
+		struct node *current = head;
+        struct node *previous = NULL;
+		int flag = -1;
+		
+		while(current!=NULL)
+		{
+			if ((current->inp).key == new_node->key)
+			{
+                if(previous == NULL)
+                {
+                    current = current->next;
+                    free(head);
+                    head = current->next;
+
+                }
+                else
+                {
+                    previous->next = current->next;
+                    free(current);
+                    current = previous->next;
+                }
+                flag = (current->inp).key ;
+				break;
+			}
+            else
+            {
+                previous = current ;
+                current = current->next;
+            }
+		}
+		
+		return flag;
+	}
+	
+	
+		
+		// insert in linked list
+		new_node->next = head;
+		head = new_node;
+		
+		return 1;
+	}
+	else
+	{
+		printk(KERN_ALERT "access NOT ok in add_node");
+		return -1;
+	}
+}
+
+
+int find_node (struct keyvalue_get *ukv)
+{
+	struct keyvalue_get *new_node = kmalloc(sizeof(struct keyvalue_get), GFP_KERNEL);
+	
+	if (!new_node)
+	{
+		printk(KERN_ALERT "No kernel space in find_node");
+		return -1;
+	}
+	
+	if (access_ok( struct keyvalue_get, ukv, sizeof(struct keyvalue_get) )) {
+		printk(KERN_ALERT "access ok in find_node");
+		copy_from_user( new_node, ukv, sizeof(struct keyvalue_get) );
+		
+		struct node *temp = head;
+		int flag = -1;
+		
+		while(temp!=NULL)
+		{
+			if ((temp->inp).key == new_node->key)
+			{
+				flag = 1;
+				break;
+			}
+			
+			temp = temp->next;
+		}
+		
+		if (flag == 1)
+		{
+			printk(KERN_ALERT "Key matched = %d", (temp->inp).key);
+			printk(KERN_ALERT "Size = %d", (temp->inp).size);
+			printk(KERN_ALERT "Data = %s", temp->actual_data);
+			
+			copy_to_user(new_node->size, &((temp->inp).size), sizeof(__u64));
+			printk(KERN_ALERT "Size copy success!!!");
+			
+			copy_to_user(new_node->data, temp->actual_data, (temp->inp).size);
+			printk(KERN_ALERT "Data copy success!!!");
+			
+			new_node->data = (temp->inp).data;
+			copy_to_user(ukv, new_node , sizeof(struct keyvalue_get));
+			printk(KERN_ALERT "Get struct copy success!!!");
+			
+			
+		}
+		
+		return flag;
+	}
+	
+	
+}
+
 
 
 //------------------------------------------------Main Code--------------------------------------------//
@@ -180,9 +300,16 @@ static long keyvalue_set(struct keyvalue_set __user *ukv)
 
 static long keyvalue_delete(struct keyvalue_delete __user *ukv)
 {
-    struct keyvalue_delete kv;
-
-    return transaction_id++;
+    int flag = delete_node(ukv);
+    if(flag!=-1)
+    {
+        return transaction_id++;
+    }
+    else
+    {
+        return -1;
+    }
+    
 }
 
 //Added by Hung-Wei
