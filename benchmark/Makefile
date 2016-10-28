@@ -1,4 +1,4 @@
-all: benchmark validate collision
+all: benchmark validate collision threadTest
 
 benchmark: benchmark.c
 	$(CC) -g -O0 benchmark.c -o benchmark -w -lckv
@@ -7,5 +7,8 @@ validate: validate.c
 collision: collision.c
 	$(CC) -g -O0 collision.c -o collision -w -lckv
 
+threadTest: threadTest.c
+	$(CC) -g -O0 threadTest.c -o threadTest -w -lckv -lpthread
+
 clean:
-	rm -f benchmark validate collision
+	rm -f benchmark validate collision threadTest
