@@ -41,6 +41,7 @@
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/poll.h>
+#include <linux/mutex.h>
 
 
 
@@ -55,6 +56,9 @@ struct node
 
 //------------------------------------------------Global variables--------------------------------------------//
 
+//struct mutex mlock;
+//mutex_init(&mlock);
+static DEFINE_MUTEX(mlock);
 
 unsigned transaction_id;
 struct node *head = NULL;
@@ -65,6 +69,7 @@ struct node *head = NULL;
 
 int add_node (struct keyvalue_set *ukv)
 {
+	
 	struct node *new_node = kmalloc(sizeof(struct node), GFP_KERNEL);
 	
 	if (!new_node)
@@ -314,44 +319,69 @@ static void free_callback(void *data)
 static long keyvalue_get(struct keyvalue_get __user *ukv)
 {
     //struct keyvalue_get kv;
+    int tid;
+    int flag;
+    
+	mutex_lock(&mlock);
+		flag = find_node (ukv);
+		if (flag==-1)
+			tid = -1;
+		else
+		{	
+			tid = transaction_id;
+			transaction_id++;
+		}	
+	mutex_unlock(&mlock);
 	
-	int flag = find_node (ukv);
-	
-	if (flag == -1)
-    	return -1;
-    else
-    	return transaction_id++;
+	return tid;
 }
 
 static long keyvalue_set(struct keyvalue_set __user *ukv)
 {
     int flag;
+    int tid;
     
-    flag = find_node_for_set(ukv);
-    if (flag == 1)
-    {
-    	delete_node_set(keyvalue_set_to_keyvalue_delete(ukv));
-    }	
-    
-    flag = add_node(ukv);
+    mutex_lock(&mlock);
+		flag = find_node_for_set(ukv);
+		if (flag == 1)
+		{
+			delete_node_set(keyvalue_set_to_keyvalue_delete(ukv));
+		}	
+		
+		flag = add_node(ukv);
+		if (flag != -1)
+		{
+			tid = transaction_id;
+			transaction_id++;	
+		}
+		
+		else
+			tid = -1;
+	mutex_unlock(&mlock);
 	
-	if (flag != -1)
-		return transaction_id++;
-	else
-		return -1;
+	return tid;
+		
 }
 
 static long keyvalue_delete(struct keyvalue_delete __user *ukv)
 {
-    int flag = delete_node(ukv);
-    if(flag!=-1)
-    {
-        return transaction_id++;
-    }
-    else
-    {
-        return -1;
-    }
+	int flag;
+	int tid;
+	
+    mutex_lock(&mlock);
+		flag = delete_node(ukv);
+		if(flag!=-1)
+		{
+		    tid = transaction_id;
+		    transaction_id++;
+		}
+		else
+		{
+		    tid = -1;
+		}
+    mutex_unlock(&mlock);
+    
+    return tid;
     
 }
 

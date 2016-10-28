@@ -6,7 +6,7 @@
 #include <fcntl.h>
 
 const int sleeptime = 1;
-const int cf = 1;
+const int cf = 3;
 
 void *setcall(int devfd)
 {
