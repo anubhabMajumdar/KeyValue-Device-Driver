@@ -1,2 +1,2 @@
-/home/anubhabmajumdar/Desktop/CSC501_KV/kernel_module/keyvalue.ko
-/home/anubhabmajumdar/Desktop/CSC501_KV/kernel_module/keyvalue.o
+/home/anubhabmajumdar/Desktop/CSC-501-Project-2/kernel_module/keyvalue.ko
+/home/anubhabmajumdar/Desktop/CSC-501-Project-2/kernel_module/keyvalue.o
