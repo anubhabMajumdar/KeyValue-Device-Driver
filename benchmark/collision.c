@@ -83,7 +83,7 @@ int main()
 		}
 		else
 		{
-				printf("Data NOT deleted for key = %d\n", key[i]);	
+			printf("Data NOT deleted for key = %d\n", key[i]);	
 		}
 	}
 	

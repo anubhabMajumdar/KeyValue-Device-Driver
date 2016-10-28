@@ -141,7 +141,7 @@ int find_node (struct keyvalue_get *ukv)
 			
 			
 		}
-		
+		kfree(new_node);
 		return flag;
 	}
 	
@@ -205,9 +205,105 @@ int delete_node (struct keyvalue_delete *ukv)
 }
 
 
+int find_node_for_set (struct keyvalue_set *ukv)
+{
+	struct keyvalue_set *new_node = kmalloc(sizeof(struct keyvalue_set), GFP_KERNEL);
+	
+	if (!new_node)
+	{
+		printk(KERN_ALERT "No kernel space in find_node_for_set");
+		return -1;
+	}
+	
+	if (access_ok( struct keyvalue_set, ukv, sizeof(struct keyvalue_set) )) {
+		printk(KERN_ALERT "access ok in find_node_for_set");
+		copy_from_user( new_node, ukv, sizeof(struct keyvalue_set) );
+		
+		struct node *temp = head;
+		int flag = -1;
+		
+		while(temp!=NULL)
+		{
+			if ((temp->inp).key == new_node->key)
+			{
+				flag = 1;
+				break;
+			}
+			
+			temp = temp->next;
+		}
+		printk(KERN_ALERT "Flag = %d in find_node_for_set", flag);
+		kfree(new_node);
+		return flag;
+	}
+	
+	
+}
 
 
+struct keyvalue_delete * keyvalue_set_to_keyvalue_delete (struct keyvalue_set *ukv)
+{
+	struct keyvalue_set *new_node = kmalloc(sizeof(struct keyvalue_set), GFP_KERNEL);
+	struct keyvalue_delete *d = kmalloc(sizeof(struct keyvalue_delete), GFP_KERNEL);
+	
+	if (!new_node)
+	{
+		printk(KERN_ALERT "No kernel space in keyvalue_set_to_keyvalue_delete");
+		return -1;
+	}
+	
+	if (access_ok( struct keyvalue_set, ukv, sizeof(struct keyvalue_set) )) {
+		printk(KERN_ALERT "access ok in keyvalue_set_to_keyvalue_delete");
+		copy_from_user( new_node, ukv, sizeof(struct keyvalue_set) );
+		d->key = new_node->key;
+		printk(KERN_ALERT "key sent back from conversion = %d", d->key);
+		kfree(new_node);
+		return d;	
+	}
+	else
+	{
+		return -1;
+	}
+}	
 
+
+int delete_node_set(struct keyvalue_delete *new_node)
+{
+	struct node *cur = head;
+    struct node *previous = NULL;
+	int flag = -1;
+	
+	while(cur!=NULL)
+	{
+		if ((cur->inp).key == new_node->key)
+		{
+            flag = (cur->inp).key ;
+			
+			if(previous == NULL)
+            {
+                //current = current->next;
+                head = cur->next;
+				kfree(cur);
+                
+            }
+
+            else
+            {
+                previous->next = cur->next;
+                kfree(cur);
+                //current = previous->next;
+            }
+            break;
+		}
+        else
+        {
+            previous = cur ;
+            cur = cur->next;
+        }
+	}
+	
+	return flag;
+}
 
 //------------------------------------------------Main Code--------------------------------------------//
 
@@ -229,12 +325,20 @@ static long keyvalue_get(struct keyvalue_get __user *ukv)
 
 static long keyvalue_set(struct keyvalue_set __user *ukv)
 {
-    int flag = add_node(ukv);
+    int flag;
+    
+    flag = find_node_for_set(ukv);
+    if (flag == 1)
+    {
+    	delete_node_set(keyvalue_set_to_keyvalue_delete(ukv));
+    }	
+    
+    flag = add_node(ukv);
 	
 	if (flag != -1)
-    	return transaction_id++;
-    else
-    	return -1;
+		return transaction_id++;
+	else
+		return -1;
 }
 
 static long keyvalue_delete(struct keyvalue_delete __user *ukv)
