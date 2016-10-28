@@ -66,7 +66,7 @@ void *deletecall(int devid)
 int main(int argc, char *argv[])
 {
     int devfd, i;
-    pthread_t threads[6];
+    pthread_t threads[15];
     
     devfd = open("/dev/keyvalue",O_RDWR);
     if(devfd < 0)
@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 	
+	/*
 	pthread_create(&threads[0], NULL, setcall, devfd);
 	pthread_create(&threads[1], NULL, setcall, devfd);
 	
@@ -83,8 +84,19 @@ int main(int argc, char *argv[])
 	
 	pthread_create(&threads[4], NULL, deletecall, devfd);
 	pthread_create(&threads[5], NULL, deletecall, devfd);
+	*/
 	
-	for (i=0;i<6;i++)
+	for(i=0;i<5;i++)
+		pthread_create(&threads[i], NULL, setcall, devfd);
+	
+	for(i=5;i<10;i++)
+		pthread_create(&threads[i], NULL, getcall, devfd);
+	
+	for(i=10;i<15;i++)
+		pthread_create(&threads[i], NULL, deletecall, devfd);
+		
+	
+	for (i=0;i<15;i++)
 		pthread_join(threads[i], NULL);
 	
 	return 0;
