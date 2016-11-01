@@ -5,8 +5,10 @@
 #include <keyvalue.h>
 #include <fcntl.h>
 
-const int sleeptime = 1;
-const int cf = 3;
+const int sleeptime = 0;
+const int cf = 1000;
+const int times = 2000;
+
 
 void *setcall(int devfd)
 {
@@ -14,18 +16,21 @@ void *setcall(int devfd)
     int tid;
     int k;
     __u64 size;
-    char data[1024];
+    char data[4096];
+    int c = 1;
     
-    while (1){
-    memset(data, 0, 1024);
+    while (c<=times){
+    memset(data, 0, 4096);
     a = rand();
     sprintf(data,"%d",a);
     
     k = rand()%cf;
     
     tid = kv_set(devfd,k,strlen(data),data);
-    printf("SET --> S\tTID=%d\tKEY=%d\tDATA SIZE=%d\tDATA=%s\n",tid,k,strlen(data),data);	
-    sleep(sleeptime);
+    //printf("SET --> S\tTID=%d\tKEY=%d\tDATA SIZE=%d\tDATA=%s\n",tid,k,strlen(data),data);	
+    printf("S\t%d\t%d\t%d\t%s\n",tid,k,strlen(data),data);
+    //sleep(sleeptime);
+    c++;
     }
 }	
 
@@ -34,16 +39,19 @@ void *getcall(int devfd)
 	int tid;
     int k;
     __u64 size;
-    char data[1024];
+    char data[4096];
+    int c = 1;
     
-    while (1){
-    memset(data, 0, 1024);
+    while (c<=times){
+    memset(data, 0, 4096);
     
     k = rand()%cf;
     
     tid = kv_get(devfd,k,&size,&data);
-    printf("GET --> S\tTID=%d\tKEY=%d\tDATA SIZE=%d\tDATA=%s\n",tid,k,strlen(data),data);
+    //printf("GET --> S\tTID=%d\tKEY=%d\tDATA SIZE=%d\tDATA=%s\n",tid,k,strlen(data),data);
+    printf("G\t%d\t%d\t%d\t%s\n",tid,k,strlen(data),data);
     sleep(sleeptime);
+    c++;
     }
 }	
 
@@ -51,15 +59,24 @@ void *deletecall(int devid)
 {
 	int tid;
 	int k;
+	char data[4096];
+	int c = 1;
+    int a;
+    
+	while (c<=times){
 	
-	while (1){
-	
+	memset(data, 0, 4096);
+    a = rand();
+    sprintf(data,"%d",a);
+    
 	k = rand()%cf;
 	
 	tid = kv_delete(devid, k);
 	
-	printf("DELETE --> S\tTID=%d\tKEY=%d\n", tid, k);
-	sleep(sleeptime);
+	//printf("DELETE --> S\tTID=%d\tKEY=%d\n", tid, k);
+	printf("D\t%d\t%d\t%d\t%s\n",tid,k,strlen(data),data);
+    sleep(sleeptime);
+    c++;
 	}
 }
 

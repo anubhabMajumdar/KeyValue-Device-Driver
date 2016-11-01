@@ -267,7 +267,8 @@ struct keyvalue_delete * keyvalue_set_to_keyvalue_delete (struct keyvalue_set *u
 	}
 	else
 	{
-		return -1;
+		d->key = -1;
+		return d;
 	}
 }	
 
@@ -345,10 +346,19 @@ static long keyvalue_set(struct keyvalue_set __user *ukv)
 		flag = find_node_for_set(ukv);
 		if (flag == 1)
 		{
-			delete_node_set(keyvalue_set_to_keyvalue_delete(ukv));
+			struct keyvalue_delete *k = keyvalue_set_to_keyvalue_delete(ukv);
+			if ((k->key)!=-1)
+			{
+				delete_node_set(k);
+				flag = add_node(ukv);
+			}
+			else
+				flag = -1;
 		}	
-		
-		flag = add_node(ukv);
+		else
+			flag = add_node(ukv);
+			
+			
 		if (flag != -1)
 		{
 			tid = transaction_id;

@@ -15,6 +15,8 @@ int main(int argc, char *argv[])
     char **kv;
     int devfd;
     int error = 0;
+    char del[4096];
+    
     if(argc < 2)
     {
         fprintf(stderr, "Usage: %s number_of_keys\n",argv[0]);
@@ -26,15 +28,28 @@ int main(int argc, char *argv[])
     {
         kv[i] = (char *)calloc(4096, sizeof(char));
     }
+    
     // Replay the log
     // Validate
     while(scanf("%c %llu %llu %d %s",&op, &tid, &key, &size, &data)!=EOF)
     {
-        if(op == 'S')
-        {
-            strcpy(kv[(int)key],data);
-            memset(data,0,4096);
-        }
+	    if (tid != -1)
+	    {
+		    if(op == 'S') 
+		    {
+		        strcpy(kv[(int)key],data);
+		        memset(data,0,4096);
+		    }
+		    else if(op == 'D')
+		    {
+		    	//printf("key = %d data = %s\n", (int)key, kv[(int)key]); 
+		        strcpy(kv[(int)key],del);
+		    	//printf("In delete ");
+		    	//kv[(int)key] = (char *)calloc(4096, sizeof(char));
+		    	//printf("key = %d data = %s\n", (int)key, kv[(int)key]); 
+		        memset(data,0,4096);
+		    }
+	   	}
     }
     devfd = open("/dev/keyvalue",O_RDWR);
     if(devfd < 0)
@@ -51,14 +66,15 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Key %i has a wrong value %s v.s. %s\n",i,data,kv[i]);
             error++;
         }
-        else
-        	fprintf(stderr, "Key %i has a correct value %s v.s. %s\n",i,data,kv[i]);
+        //else
+        	//fprintf(stderr, "Key %i has a correct value %s v.s. %s\n",i,data,kv[i]);
         
     }
     if(error==0)
             fprintf(stderr, "You passed!\n");
         
     // validate delete        
+    /*
     for(i = 0; i < number_of_keys+10; i++)
     {
         tid = kv_delete(devfd, i);
@@ -76,7 +92,7 @@ int main(int argc, char *argv[])
 		else
 			printf("Found key %d\n", i);		
     }        
-    
+    */
     close(devfd);
     return 0;
 }
