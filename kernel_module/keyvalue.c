@@ -1,3 +1,5 @@
+/* Developed by Anubhab Majumdar (amajumd@ncsu.edu) and Arun Jaganathan (ajagana@ncsu.edu) */
+
 //////////////////////////////////////////////////////////////////////
 //                             North Carolina State University
 //
